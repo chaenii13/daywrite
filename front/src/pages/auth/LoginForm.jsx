@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import L from './login.form.style';
 import BasicButton from '../../components/button/BasicButton'
 import { filledButtonCSS } from '../../components/button/style';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,10 +16,13 @@ const LoginForm = () => {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[!@#])[\da-zA-Z!@#]{8,}$/;
 
-  const onSubmit = async (data) => { console.log(data); };
+  // const onSubmit = async (data) => { console.log(data); };
+  const navigate = useNavigate();
 
   return (
     <L.LoginContainer>
+
+
 
       <L.LoginLeftBox>
         <L.Logo src="/assets/images/logo.png" alt="logo" />
@@ -28,7 +31,32 @@ const LoginForm = () => {
 
 
       <L.LoginRightBox>
-        <L.Form onSubmit={handleSubmit(onSubmit)}>
+      <L.Form onSubmit={handleSubmit(async (datas) => {
+        await fetch(`${process.env.REACT_APP_BACKEND_URL}/users/api/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: datas.email,
+            password: datas.password
+          })
+        })
+        .then(res => res.json())
+        .then(res => {
+          if (!res.loginStatus) {
+            alert("정보를 확인해주세요!");
+            return;
+          } else {
+            localStorage.setItem("token", res.token); // 로그인 유지
+            navigate("/"); // 로그인 성공 → 메인 화면으로 이동
+          }
+        })
+        .catch(err => {
+          console.error("Login error:", err);
+          alert("서버 오류가 발생했습니다.");
+        });
+      })}>
 
           <L.FormSection>
             <L.Title>로그인</L.Title>

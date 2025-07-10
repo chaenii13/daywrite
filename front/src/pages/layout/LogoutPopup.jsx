@@ -1,11 +1,10 @@
-import React from 'react';
+import React from "react";
 import BasicButton from '../../components/button/BasicButton';
-import P from "./signup.popup.style";
+import P from "./logoutpopup.style";
 import { filledButtonCSS, outlineButtonCSS } from '../../components/button/style';
 
-const SignUpPopup = ({ 
+const LogoutPopup = ({ 
   title, 
-  content, 
   onClose, 
   onConfirm, 
   showCancel = false 
@@ -18,7 +17,6 @@ const SignUpPopup = ({
             <img src={process.env.PUBLIC_URL + '/assets/images/icons/close.png'} alt="닫기" />
           </P.CloseIcon>
         </P.PopupTitle>
-        <P.PopupContent>{content}</P.PopupContent>
         <P.ButtonWrapper>
           {showCancel && (
             <BasicButton
@@ -26,7 +24,7 @@ const SignUpPopup = ({
               customStyle={outlineButtonCSS}
               onClick={onClose}
             >
-              취소
+              아니요
             </BasicButton>
           )}
           <BasicButton
@@ -34,7 +32,7 @@ const SignUpPopup = ({
             customStyle={filledButtonCSS}
             onClick={onConfirm}
           >
-            확인
+            네
           </BasicButton>
         </P.ButtonWrapper>
         </P.ModalBox>
@@ -42,4 +40,4 @@ const SignUpPopup = ({
   );
 };
 
-export default SignUpPopup;
+export default LogoutPopup;
