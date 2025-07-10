@@ -9,7 +9,7 @@ S.TabMenu = styled.div`
   z-index: 100;
   background-color: white;
   width: 100%;
-  padding-top:25px;
+  padding-top:20px;
 
   a {
     text-decoration: none;

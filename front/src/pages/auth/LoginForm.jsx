@@ -4,6 +4,8 @@ import L from './login.form.style';
 import BasicButton from '../../components/button/BasicButton'
 import { filledButtonCSS } from '../../components/button/style';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUserStatus } from '../../modules/count/count';
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,19 +13,24 @@ const LoginForm = () => {
 
   const {
     register, handleSubmit, getValues, formState: {isSubmitting, isSubmitted, errors }
-  } = useForm({ mode: "onSubmit" })
-  
+  } = useForm({ mode: "onChange" })
+
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[!@#])[\da-zA-Z!@#]{8,}$/;
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
-  // const onSubmit = async (data) => { console.log(data); };
-  const navigate = useNavigate();
+  const userStatus = useSelector((state) => state.user.isLogin);
+  const currentUser = useSelector((state) => state.user.currentUser);
+
+  if(userStatus){
+    return (
+      <div>{currentUser.nickname}님 환영합니다.</div>
+    )
+  }
 
   return (
     <L.LoginContainer>
-
-
-
       <L.LoginLeftBox>
         <L.Logo src="/assets/images/logo.png" alt="logo" />
         <L.LoginSubText>글과 음악이 함께하는 공간.</L.LoginSubText>
@@ -32,30 +39,38 @@ const LoginForm = () => {
 
       <L.LoginRightBox>
       <L.Form onSubmit={handleSubmit(async (datas) => {
-        await fetch(`${process.env.REACT_APP_BACKEND_URL}/users/api/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
+        // submit이 클릭되었을 때 가로채어 데이터들을 처리한다.
+        console.log(datas)
+
+        await fetch(`${process.env.REACT_APP_BACKEND_URL}/users/api/loginUser`, {
+          method : "POST",
+          headers : {
+            "Content-Type" : "application/json"
           },
-          body: JSON.stringify({
+          body : JSON.stringify({
             email: datas.email,
-            password: datas.password
+            password: datas.password,
           })
         })
-        .then(res => res.json())
-        .then(res => {
-          if (!res.loginStatus) {
-            alert("정보를 확인해주세요!");
-            return;
-          } else {
-            localStorage.setItem("token", res.token); // 로그인 유지
-            navigate("/"); // 로그인 성공 → 메인 화면으로 이동
+        .then((res) => {
+          // 실패했다면
+          if(!res.ok) {
+            const errorResponse = res.json();
+            throw new Error(errorResponse.message || "로그인에 실패했습니다.")
           }
+          return res.json()
         })
-        .catch(err => {
-          console.error("Login error:", err);
-          alert("서버 오류가 발생했습니다.");
-        });
+        .then((res) => {
+          console.log(res)
+          // 성공했다면
+          const { accessToken } = res;
+          // 로그인을 완료한 유저의 상태를 리덕스에 저장하는 코드
+          localStorage.clear()
+          localStorage.setItem("jwtToken", accessToken)
+          dispatch(setUserStatus(true));
+          navigate("/")
+        })
+        .catch(console.log)
       })}>
 
           <L.FormSection>
